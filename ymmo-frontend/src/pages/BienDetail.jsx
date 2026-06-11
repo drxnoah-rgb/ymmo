@@ -2,6 +2,30 @@ import { useState, useEffect } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { bienService } from '../services/api';
 
+const PHOTOS = {
+  APPARTEMENT: [
+    'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?w=900&q=80',
+    'https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?w=900&q=80',
+    'https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?w=900&q=80',
+  ],
+  MAISON: [
+    'https://images.unsplash.com/photo-1568605114967-8130f3a36994?w=900&q=80',
+    'https://images.unsplash.com/photo-1570129477492-45c003edd2be?w=900&q=80',
+    'https://images.unsplash.com/photo-1512917774080-9991f1c4c750?w=900&q=80',
+  ],
+  BUREAU: [
+    'https://images.unsplash.com/photo-1497366216548-37526070297c?w=900&q=80',
+    'https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=900&q=80',
+  ],
+  TERRAIN: ['https://images.unsplash.com/photo-1500382017468-9049fed747ef?w=900&q=80'],
+  COMMERCE: ['https://images.unsplash.com/photo-1441986300917-64674bd600d8?w=900&q=80'],
+};
+
+function getPhoto(type, id) {
+  const arr = PHOTOS[type] || PHOTOS.APPARTEMENT;
+  return arr[id % arr.length];
+}
+
 export default function BienDetail() {
   const { id } = useParams();
   const [bien, setBien] = useState(null);
@@ -14,83 +38,114 @@ export default function BienDetail() {
       .finally(() => setLoading(false));
   }, [id]);
 
-  if (loading) return <div style={styles.center}>Chargement...</div>;
-  if (!bien) return <div style={styles.center}>Bien non trouvé.</div>;
+  if (loading) return (
+    <div style={{minHeight:'100vh', background:'#f8f8f6', display:'flex', alignItems:'center', justifyContent:'center', color:'#aaa', fontSize:'0.95rem'}}>
+      Chargement...
+    </div>
+  );
+  if (!bien) return (
+    <div style={{minHeight:'100vh', background:'#f8f8f6', display:'flex', alignItems:'center', justifyContent:'center', color:'#aaa', fontSize:'0.95rem'}}>
+      Bien non trouvé.
+    </div>
+  );
+
+  const statutColor = bien.statut === 'DISPONIBLE' ? '#1a1a1a' : '#dc2626';
 
   return (
-    <div style={styles.container}>
-      <header style={styles.header}>
-        <Link to="/" style={styles.logo}>🏠 Ymmo</Link>
-        <Link to="/" style={styles.back}>← Retour aux annonces</Link>
-      </header>
+    <div style={{fontFamily:"'Segoe UI', sans-serif", minHeight:'100vh', background:'#f8f8f6', color:'#1a1a1a'}}>
 
-      <main style={styles.main}>
-        <div style={styles.imageBox}>🏡</div>
+      {/* NAVBAR */}
+      <nav style={{background:'#fff', borderBottom:'1px solid #e8e8e4', padding:'0 4rem', height:'72px', display:'flex', alignItems:'center', justifyContent:'space-between', position:'sticky', top:0, zIndex:100}}>
+        <Link to="/" style={{fontWeight:900, fontSize:'1.6rem', color:'#1a1a1a', textDecoration:'none', letterSpacing:'-1.5px'}}>
+          YMMO
+        </Link>
+        <Link to="/" style={{fontSize:'0.875rem', color:'#666', textDecoration:'none', fontWeight:500, display:'flex', alignItems:'center', gap:'6px'}}>
+          ← Retour aux annonces
+        </Link>
+      </nav>
 
-        <div style={styles.content}>
-          <div style={styles.topRow}>
-            <span style={{...styles.badge, background: bien.statut === 'DISPONIBLE' ? '#16a34a' : '#dc2626'}}>
-              {bien.statut}
-            </span>
-            <span style={styles.type}>{bien.type}</span>
+      <main style={{maxWidth:'1000px', margin:'3rem auto', padding:'0 2rem'}}>
+
+        {/* PHOTO */}
+        <div style={{borderRadius:'16px', overflow:'hidden', height:'420px', marginBottom:'2rem', border:'1px solid #e8e8e4'}}>
+          <img
+            src={getPhoto(bien.type, bien.id)}
+            alt={bien.titre}
+            style={{width:'100%', height:'100%', objectFit:'cover'}}
+          />
+        </div>
+
+        <div style={{display:'grid', gridTemplateColumns:'1fr 340px', gap:'2rem', alignItems:'start'}}>
+
+          {/* CONTENU PRINCIPAL */}
+          <div>
+            <div style={{display:'flex', gap:'8px', marginBottom:'1rem'}}>
+              <span style={{background: statutColor, color:'#fff', padding:'4px 12px', borderRadius:'6px', fontSize:'0.72rem', fontWeight:700, letterSpacing:'0.5px', textTransform:'uppercase'}}>
+                {bien.statut === 'DISPONIBLE' ? 'Disponible' : bien.statut === 'EN_COURS' ? 'En cours' : 'Vendu'}
+              </span>
+              <span style={{background:'#f0f0ec', color:'#444', padding:'4px 12px', borderRadius:'6px', fontSize:'0.72rem', fontWeight:600, letterSpacing:'0.5px', textTransform:'uppercase'}}>
+                {bien.type}
+              </span>
+            </div>
+
+            <h1 style={{fontSize:'2rem', fontWeight:900, letterSpacing:'-1px', margin:'0 0 0.5rem', color:'#1a1a1a'}}>
+              {bien.titre}
+            </h1>
+            <p style={{color:'#888', fontSize:'0.95rem', margin:'0 0 1.5rem'}}>
+              {bien.adresse && `${bien.adresse}, `}{bien.ville} {bien.codePostal}
+            </p>
+
+            <div style={{display:'flex', gap:'2rem', padding:'1.5rem 0', borderTop:'1px solid #e8e8e4', borderBottom:'1px solid #e8e8e4', marginBottom:'2rem'}}>
+              <div>
+                <div style={{fontSize:'0.75rem', color:'#aaa', fontWeight:600, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'4px'}}>Surface</div>
+                <div style={{fontSize:'1.2rem', fontWeight:800, color:'#1a1a1a'}}>{bien.surface} m²</div>
+              </div>
+              <div>
+                <div style={{fontSize:'0.75rem', color:'#aaa', fontWeight:600, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'4px'}}>Pièces</div>
+                <div style={{fontSize:'1.2rem', fontWeight:800, color:'#1a1a1a'}}>{bien.nbPieces}</div>
+              </div>
+              <div>
+                <div style={{fontSize:'0.75rem', color:'#aaa', fontWeight:600, textTransform:'uppercase', letterSpacing:'1px', marginBottom:'4px'}}>Type</div>
+                <div style={{fontSize:'1.2rem', fontWeight:800, color:'#1a1a1a'}}>{bien.type}</div>
+              </div>
+            </div>
+
+            <div>
+              <h3 style={{fontSize:'1rem', fontWeight:700, color:'#1a1a1a', marginBottom:'0.75rem'}}>Description</h3>
+              <p style={{color:'#666', lineHeight:1.8, fontSize:'0.95rem'}}>
+                {bien.description || 'Aucune description disponible pour ce bien.'}
+              </p>
+            </div>
           </div>
 
-          <h1 style={styles.title}>{bien.titre}</h1>
-          <p style={styles.ville}>📍 {bien.adresse}, {bien.ville} {bien.codePostal}</p>
-          <p style={styles.prix}>{bien.prix?.toLocaleString()} €</p>
+          {/* SIDEBAR PRIX */}
+          <div style={{background:'#fff', borderRadius:'16px', border:'1px solid #e8e8e4', padding:'2rem', position:'sticky', top:'88px'}}>
+            <div style={{fontSize:'2rem', fontWeight:900, color:'#1a1a1a', letterSpacing:'-1px', marginBottom:'0.25rem'}}>
+              {bien.prix?.toLocaleString()} €
+            </div>
+            <p style={{color:'#aaa', fontSize:'0.8rem', marginBottom:'1.5rem'}}>
+              {bien.surface > 0 ? `${Math.round(bien.prix / bien.surface).toLocaleString()} €/m²` : ''}
+            </p>
 
-          <div style={styles.infoGrid}>
-            <div style={styles.infoBox}>
-              <span style={styles.infoLabel}>Surface</span>
-              <span style={styles.infoValue}>{bien.surface} m²</span>
-            </div>
-            <div style={styles.infoBox}>
-              <span style={styles.infoLabel}>Pièces</span>
-              <span style={styles.infoValue}>{bien.nbPieces}</span>
-            </div>
-            <div style={styles.infoBox}>
-              <span style={styles.infoLabel}>Type</span>
-              <span style={styles.infoValue}>{bien.type}</span>
+            {bien.statut === 'DISPONIBLE' ? (
+              <Link to="/login" style={{display:'block', textAlign:'center', background:'#1a1a1a', color:'#fff', padding:'0.875rem', borderRadius:'8px', textDecoration:'none', fontWeight:700, fontSize:'0.95rem', letterSpacing:'0.2px'}}>
+                Contacter l'agence
+              </Link>
+            ) : (
+              <div style={{textAlign:'center', padding:'0.875rem', borderRadius:'8px', background:'#f0f0ec', color:'#aaa', fontSize:'0.95rem', fontWeight:600}}>
+                {bien.statut === 'VENDU' ? 'Ce bien est vendu' : 'Traitement en cours'}
+              </div>
+            )}
+
+            <div style={{marginTop:'1.5rem', paddingTop:'1.5rem', borderTop:'1px solid #e8e8e4'}}>
+              <p style={{fontSize:'0.78rem', color:'#aaa', textAlign:'center', lineHeight:1.6}}>
+                Ymmo — Agence immobilière<br />
+                04 42 00 00 00 · contact@ymmo.fr
+              </p>
             </div>
           </div>
-
-          <div style={styles.descBox}>
-            <h3 style={styles.descTitle}>Description</h3>
-            <p style={styles.desc}>{bien.description || 'Aucune description disponible.'}</p>
-          </div>
-
-          {bien.statut === 'DISPONIBLE' && (
-            <Link to="/login" style={styles.ctaBtn}>
-              Contacter l'agence
-            </Link>
-          )}
         </div>
       </main>
     </div>
   );
 }
-
-const styles = {
-  container: { fontFamily: 'sans-serif', minHeight: '100vh', background: '#f8fafc' },
-  center: { textAlign: 'center', padding: '4rem', color: '#64748b' },
-  header: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 2rem', background: '#fff', boxShadow: '0 1px 4px rgba(0,0,0,0.1)' },
-  logo: { fontSize: '1.5rem', color: '#1d4ed8', textDecoration: 'none', fontWeight: 700 },
-  back: { color: '#1d4ed8', textDecoration: 'none', fontWeight: 500 },
-  main: { maxWidth: '900px', margin: '2rem auto', padding: '0 1rem' },
-  imageBox: { background: '#dbeafe', borderRadius: '16px', height: '300px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '6rem', marginBottom: '2rem' },
-  content: { background: '#fff', borderRadius: '16px', padding: '2rem', boxShadow: '0 2px 8px rgba(0,0,0,0.08)' },
-  topRow: { display: 'flex', gap: '0.75rem', marginBottom: '1rem' },
-  badge: { color: '#fff', padding: '4px 12px', borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600 },
-  type: { background: '#e0e7ff', color: '#3730a3', padding: '4px 12px', borderRadius: '99px', fontSize: '0.85rem', fontWeight: 600 },
-  title: { margin: '0 0 0.5rem', fontSize: '1.75rem', color: '#1e293b' },
-  ville: { color: '#64748b', margin: '0 0 1rem' },
-  prix: { fontSize: '2rem', fontWeight: 700, color: '#1d4ed8', margin: '0 0 1.5rem' },
-  infoGrid: { display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' },
-  infoBox: { background: '#f8fafc', borderRadius: '12px', padding: '1rem', textAlign: 'center', display: 'flex', flexDirection: 'column', gap: '0.25rem' },
-  infoLabel: { fontSize: '0.8rem', color: '#94a3b8', fontWeight: 500 },
-  infoValue: { fontSize: '1.1rem', fontWeight: 700, color: '#1e293b' },
-  descBox: { borderTop: '1px solid #e2e8f0', paddingTop: '1.5rem', marginBottom: '1.5rem' },
-  descTitle: { margin: '0 0 0.75rem', color: '#1e293b' },
-  desc: { color: '#475569', lineHeight: 1.7 },
-  ctaBtn: { display: 'block', textAlign: 'center', background: '#1d4ed8', color: '#fff', padding: '1rem', borderRadius: '12px', textDecoration: 'none', fontWeight: 600, fontSize: '1.1rem' },
-};
