@@ -2,6 +2,8 @@
 
 Application de gestion et consultation de biens immobiliers, composée d'une API REST, d'un frontend React et d'un module d'analyse de données.
 
+📄 Documentation complète (fonctionnelle, technique DEV et infrastructure réseau) : [DOCUMENTATION.md](./DOCUMENTATION.md)
+
 ## Stack technique
 
 | Couche | Technologie |
